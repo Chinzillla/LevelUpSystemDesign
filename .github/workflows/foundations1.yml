@@ -1,0 +1,58 @@
+# FOUNDATIONS1 GITHUB ACTION
+
+name: Foundations1 CI
+
+on:
+  push:
+    paths:
+      - "Foundations1/**"
+      - ".github/workflows/foundations1.yml"
+  pull_request:
+    paths:
+      - "Foundations1/**"
+      - ".github/workflows/foundations1.yml"
+  workflow_dispatch:
+
+jobs:
+  test-foundations1:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Foundations1/backend
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check Python syntax
+        run: |
+          python -m py_compile app.py
+          python -m py_compile db.py
+          python -m py_compile routes/auth.py
+          python -m py_compile routes/health.py
+          python -m py_compile routes/items.py
+          python -m py_compile helper/bp_register.py
+
+      - name: Check frontend JavaScript syntax
+        run: node --check ../app.js
+
+      - name: Run backend tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/Foundations1/backend
+        run: python -m pytest -q

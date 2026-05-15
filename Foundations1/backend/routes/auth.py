@@ -58,9 +58,64 @@ def register_user():
         "email": email
     }), 201
 
+@auth_bp.route("/login", methods=['GET'])
+def login_user():
+    data = request.get_json() or {}
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a JSON object"}), 400
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if not is_valid_email(email):
+        return jsonify({"error": "Valid email format is required"}), 400
+
+    email = email.strip()
+
+    password_error = validate_password(password)
+    if password_error:
+        return jsonify({"error": password_error}), 400
+    
+    hashed_password = hash_password(password)
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT password FROM users WHERE email = ?",
+            (email,)
+        )
+        user = cursor.fetchone()
+        if user is None:
+            return jsonify({"error": "Invalid email or password"}), 401
+
+        stored_password_hash = user["password"]
+        if hash_password(password) != stored_password_hash:
+            return jsonify({"error": "Invalid email or password"}), 401
+        
+        return jsonify({
+            "message": "Login successful",
+            "email": email
+        }), 200
+
+    except sqlite3.IntegrityError:
+        return jsonify({
+            "error": "Email already exists"
+        }), 409
+
+    finally:
+        connection.close()
 
 #Helpers
 def is_valid_email(email):
+    """
+    Basic validatation for registration email.
+
+    Returns:
+        Boolean
+    """
     if not isinstance(email, str):
         return False
 
@@ -84,6 +139,12 @@ def is_valid_email(email):
     return True
 
 def validate_password(password):
+    """
+    Basic validatation for registration password.
+
+    Returns:
+        str | None: An error message when invalid, otherwise None.
+    """
     if not isinstance(password, str):
         return "Valid Password is required"
 
