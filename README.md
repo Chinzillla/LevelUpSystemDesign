@@ -2,6 +2,12 @@
 
 This repo is a hands-on path for learning system design from small working apps upward.
 
-## Current Starting Point
+## Projects
 
-- `Foundations/` - a tiny frontend that calls a Flask backend and displays a JSON response.
+### Level 0
+
+- `Foundations/` - a simple barebone fullstack CRUD app.
+
+### Level 1
+
+- `Foundations1/` - a simple fullstack CRUD app with user authentication and protected routes.
