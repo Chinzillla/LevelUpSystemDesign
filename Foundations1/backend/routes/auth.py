@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from db import get_connection
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -13,9 +14,21 @@ def register_user():
         return jsonify({
             "error": "Email and password are required"
         }), 400
+    
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "INSERT INTO users (email, password) VALUES (?, ?)",
+        (email, password)
+    )
+
+    connection.commit()
+    user_id = cursor.lastrowid
+    connection.close()
 
     return jsonify({
         "message": "You are registered!",
-        "id": "1",
+        "id": user_id,
         "email": email
     }), 201

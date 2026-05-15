@@ -36,3 +36,6 @@ def test_register_returns_user(client):
     data = response.get_json()
     assert data["id"]
     assert data["email"] == "noob@example.com"
+
+# def test_register_existing_user(client):
+#     response = cl
