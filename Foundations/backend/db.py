@@ -1,7 +1,8 @@
 import sqlite3
+import os
 from pathlib import Path
 
-DATABASE = Path(__file__).with_name("app.db")
+DATABASE = Path(os.environ.get("DATABASE", Path(__file__).with_name("app.db")))
 
 
 def get_connection():
@@ -23,6 +24,7 @@ def init_db():
 
     connection.commit()
     connection.close()
+
 
 if __name__ == "__main__":
     init_db()
