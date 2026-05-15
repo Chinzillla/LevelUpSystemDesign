@@ -8,4 +8,4 @@ def test_register_route_exists():
         "password": "urmum"
     })
 
-    assert response.status_code == 404
+    assert response.status_code == 201
