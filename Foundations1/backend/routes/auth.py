@@ -16,5 +16,6 @@ def register_user():
 
     return jsonify({
         "message": "You are registered!",
+        "id": "1",
         "email": email
     }), 201
