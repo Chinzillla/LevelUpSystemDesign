@@ -58,7 +58,7 @@ def register_user():
         "email": email
     }), 201
 
-@auth_bp.route("/login", methods=['GET'])
+@auth_bp.route("/login", methods=['POST'])
 def login_user():
     data = request.get_json() or {}
 
@@ -89,7 +89,7 @@ def login_user():
         )
         user = cursor.fetchone()
         if user is None:
-            return jsonify({"error": "User does not exist"}), 401
+            return jsonify({"error": "Invalid email or password"}), 401
 
         stored_password_hash = user["password"]
         if hash_password(password) != stored_password_hash:

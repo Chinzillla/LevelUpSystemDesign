@@ -18,18 +18,18 @@ def mock_user(client):
     }
 
 def test_login_rejects_nonexistent_email(client):
-    response = client.get("/auth/login", json = {
+    response = client.post("/auth/login", json = {
         "email": "iamnotindb@gmail.com",
         "password": "thisispassword"
     })
 
     assert response.status_code == 401
     assert response.get_json() == {
-        "error": "User does not exist"
+        "error": "Invalid email or password"
     }
 
 def test_login_rejects_wrong_password(client, mock_user):
-    response_login = client.get("/auth/login", json = {
+    response_login = client.post("/auth/login", json = {
         "email": mock_user["email"],
         "password":"wrong_password"
     })
@@ -40,7 +40,7 @@ def test_login_rejects_wrong_password(client, mock_user):
     }
 
 def test_login_correct_password(client, mock_user):
-    response_login = client.get("/auth/login", json = {
+    response_login = client.post("/auth/login", json = {
         "email": mock_user["email"],
         "password": mock_user["password"]
     })
