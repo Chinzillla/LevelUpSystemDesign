@@ -15,6 +15,18 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['POST'])
 def register_user():
+    """
+    Routing logic for registering a new user.
+
+    Expects JSON with:
+        email: user's email address
+        password: user's plain-text password
+
+    Returns:
+        201 when the user is created.
+        400 when request data is invalid.
+        409 when the email already exists.
+    """
     data = request.get_json() or {}
 
     if not isinstance(data, dict):
@@ -61,6 +73,12 @@ def register_user():
 
 #Helpers
 def is_valid_email(email):
+    """
+    Basic validatation for registration email.
+
+    Returns:
+        Boolean
+    """
     if not isinstance(email, str):
         return False
 
@@ -84,6 +102,12 @@ def is_valid_email(email):
     return True
 
 def validate_password(password):
+    """
+    Basic validatation for registration password.
+
+    Returns:
+        str | None: An error message when invalid, otherwise None.
+    """
     if not isinstance(password, str):
         return "Valid Password is required"
 
