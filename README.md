@@ -7,18 +7,21 @@ This repo is a hands-on path for learning system design from small working apps 
 ```cmd
 python -m venv .venv
 .venv\Scripts\activate.bat
+python.exe -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python.exe -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python.exe -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
