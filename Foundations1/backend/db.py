@@ -23,6 +23,16 @@ def init_db():
     )
     """)
 
+    connection.execute("""
+    CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_token TEXT NOT NULL UNIQUE,
+        user_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    """)
+
     connection.commit()
     connection.close()
 

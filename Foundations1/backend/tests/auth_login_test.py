@@ -46,3 +46,7 @@ def test_login_correct_password(client, mock_user):
     })
 
     assert response_login.status_code == 200
+    assert response_login.get_json() == {
+            "message": "Login successful",
+            "email": mock_user["email"]
+    }
