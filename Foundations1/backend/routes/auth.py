@@ -8,19 +8,17 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 def register_user():
     data = request.get_json() or {}
 
-    email = data.get("email")
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a JSON object"}), 400
+
+    email = data.get("email").strip()
     password = data.get("password")
 
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
-    
-    if not password:
-        return jsonify({"error": "Password is required"}), 400
-    
-    email.strip()
-
-    if "@" not in email:
+    if not is_valid_email(email):
         return jsonify({"error": "Valid email format is required"}), 400
+
+    if not password:
+        return jsonify({"error": "Valid Password is required"}), 400
     
     connection = get_connection()
     cursor = connection.cursor()
@@ -45,3 +43,29 @@ def register_user():
         "id": user_id,
         "email": email
     }), 201
+
+
+#Helper
+def is_valid_email(email):
+    if not isinstance(email, str):
+        return False
+
+    email = email.strip()
+
+    if not email:
+        return False
+
+    email_parts = email.split("@")
+
+    if len(email_parts) != 2:
+        return False
+
+    local_part, domain_part = email_parts
+
+    if not local_part or not domain_part:
+        return False
+
+    if "." not in domain_part:
+        return False
+
+    return True

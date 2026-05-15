@@ -19,12 +19,12 @@ def test_emptydata_register_route(client):
 
     assert no_email_response.status_code == 400
     assert no_email_response.get_json() == {
-        "error": "Email is required"
+        "error": "Valid email format is required"
     }
     
     assert no_password_response.status_code == 400
     assert no_password_response.get_json() == {
-        "error": "Password is required"
+        "error": "Valid Password is required"
     }
 
 def test_register_returns_user(client):
@@ -60,4 +60,34 @@ def test_register_incorrect_email(client):
     assert response.status_code == 400
     assert response.get_json() == {
         "error": "Valid email format is required"
+    }
+
+def test_register_requires_email_when_whitespace(client):
+    response = client.post("/auth/register", json={
+        "email": "   ",
+        "password": "password123"
+    })
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "Valid email format is required"
+    }
+
+def test_register_rejects_email_with_only_at_symbol(client):
+    response = client.post("/auth/register", json={
+        "email": "@",
+        "password": "password123"
+    })
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "Valid email format is required"
+    }
+
+def test_register_rejects_non_object_json(client):
+    response = client.post("/auth/register", json=["email", "password"])
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "Request body must be a JSON object"
     }
