@@ -29,6 +29,24 @@ async function createMessage(payload) {
     return data;
 }
 
+async function updateMessage(id, payload) {
+    const response = await fetch(`${API_BASE_URL}/messages/${id}/`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+    }
+
+    return data;
+}
+
 async function deleteMessage(id) {
     const response = await fetch(`${API_BASE_URL}/messages/${id}/`, {
         method: "DELETE",
