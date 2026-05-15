@@ -4,6 +4,8 @@ from db import get_connection
 import hashlib
 import os
 from dotenv import load_dotenv
+import secrets
+
 
 load_dotenv()
 SALT = os.environ.get("SALT")
@@ -43,12 +45,14 @@ def register_user():
             (email, hashed_password)
         )
 
-        connection.commit()
         user_id = cursor.lastrowid
+        connection.commit()
+
     except sqlite3.IntegrityError:
         return jsonify({
             "error": "Email already exists"
         }), 409
+    
     finally:
         connection.close()
 
@@ -76,8 +80,6 @@ def login_user():
     password_error = validate_password(password)
     if password_error:
         return jsonify({"error": password_error}), 400
-    
-    hashed_password = hash_password(password)
 
     connection = get_connection()
     cursor = connection.cursor()
@@ -95,9 +97,23 @@ def login_user():
         if hash_password(password) != stored_password_hash:
             return jsonify({"error": "Invalid email or password"}), 401
         
+        cursor.execute(
+            "SELECT id, password FROM users WHERE email = ?",
+            (email,)
+        )
+        user = cursor.fetchone()
+        
+        session_token = secrets.token_urlsafe(32)
+        
+        cursor.execute(
+            "INSERT INTO sessions (session_token, user_id, created_at) VALUES (?, ?, datetime('now'))" ,
+            (session_token, user["id"])
+        )
+
         return jsonify({
             "message": "Login successful",
-            "email": email
+            "email": email,
+            "session_token": session_token
         }), 200
 
     except sqlite3.IntegrityError:
