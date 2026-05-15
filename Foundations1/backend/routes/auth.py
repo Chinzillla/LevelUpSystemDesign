@@ -5,6 +5,7 @@ import hashlib
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
 SALT = os.environ.get("SALT")
 
 if not SALT:
@@ -58,7 +59,7 @@ def register_user():
     }), 201
 
 
-#Helper
+#Helpers
 def is_valid_email(email):
     if not isinstance(email, str):
         return False

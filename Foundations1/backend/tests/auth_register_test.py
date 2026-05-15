@@ -6,15 +6,13 @@ def test_register_route_exists(client):
 
     assert response.status_code == 201
 
-def test_emptydata_register_route(client):
+def test_missing_data_register_route(client):
     no_email_response = client.post("/auth/register", json = {
-        "email": "",
-        "password" : ""
+        "password" : "213142131"
     })
 
     no_password_response = client.post("/auth/register", json = {
         "email": "test@gmail.com",
-        "password": ""
     })
 
     assert no_email_response.status_code == 400
