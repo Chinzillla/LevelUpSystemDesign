@@ -1,13 +1,3 @@
-import pytest
-from app import app
-
-@pytest.fixture()
-def client():
-    app.config.update(TESTING=True)
-
-    with app.test_client() as test_client:
-        yield test_client
-
 def test_register_route_exists(client):
     response = client.post("/auth/register", json = {
         "email": "abcd@example.com",
@@ -37,5 +27,16 @@ def test_register_returns_user(client):
     assert data["id"]
     assert data["email"] == "noob@example.com"
 
-# def test_register_existing_user(client):
-#     response = cl
+def test_register_existing_user(client):
+    first_response = client.post("/auth/register", json={
+        "email": "noob1@example.com",
+        "password": "dontstealmypasswordpls"
+    })
+
+    second_response = client.post("/auth/register", json={
+        "email": "noob1@example.com",
+        "password": "dontstealmypasswordpls"
+    })
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 409

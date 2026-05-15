@@ -1,9 +1,4 @@
-from app import app
-
-def test_health_route():
-    # Create a mock client
-    client = app.test_client()
-
+def test_health_route(client):
     response = client.get("/health/")
 
     assert response.status_code == 200

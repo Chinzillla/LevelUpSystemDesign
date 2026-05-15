@@ -1,3 +1,4 @@
+import sqlite3
 from flask import Blueprint, jsonify, request
 from db import get_connection
 
@@ -18,14 +19,20 @@ def register_user():
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute(
-        "INSERT INTO users (email, password) VALUES (?, ?)",
-        (email, password)
-    )
+    try:
+        cursor.execute(
+            "INSERT INTO users (email, password) VALUES (?, ?)",
+            (email, password)
+        )
 
-    connection.commit()
-    user_id = cursor.lastrowid
-    connection.close()
+        connection.commit()
+        user_id = cursor.lastrowid
+    except sqlite3.IntegrityError:
+        return jsonify({
+            "error": "Email already exists"
+        }), 409
+    finally:
+        connection.close()
 
     return jsonify({
         "message": "You are registered!",

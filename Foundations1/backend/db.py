@@ -1,7 +1,14 @@
+import os
 import sqlite3
+from dotenv import load_dotenv
+
+DATABASE = os.environ.get("DATABASE_NAME")
+
+if not DATABASE:
+    raise RuntimeError("DATABASE_NAME environment variable must be set")
 
 def get_connection():
-    connection = sqlite3.connect("app.db")
+    connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
 
