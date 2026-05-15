@@ -1,28 +1,48 @@
-def test_login_rejects_wrong_password(client):
-    response_reg = client.post("/auth/register", json ={
-        "email":"test@example.com",
-        "password":"hellothere!"
-    })
-    response_login = client.get("/auth/login", json = {
-        "email":"test@example.com",
-        "password":"hellothere"
+import pytest
+
+@pytest.fixture()
+def mock_user(client):
+    email = "test@example.com"
+    password = "hellothere!"
+
+    response = client.post("/auth/register", json ={
+        "email": email,
+        "password": password
     })
 
-    assert response_reg.status_code == 201
+    assert response.status_code == 201
+
+    return {
+        "email": email,
+        "password": password
+    }
+
+def test_login_rejects_nonexistent_email(client):
+    response = client.get("/auth/login", json = {
+        "email": "iamnotindb@gmail.com",
+        "password": "thisispassword"
+    })
+
+    assert response.status_code == 401
+    assert response.get_json() == {
+        "error": "User does not exist"
+    }
+
+def test_login_rejects_wrong_password(client, mock_user):
+    response_login = client.get("/auth/login", json = {
+        "email": mock_user["email"],
+        "password":"wrong_password"
+    })
+
     assert response_login.status_code == 401
     assert response_login.get_json() == {
         "error": "Invalid email or password"
     }
 
-def test_login_correct_password(client):
-    response_reg = client.post("/auth/register", json ={
-        "email":"test1@example.com",
-        "password":"hellothere!"
-    })
+def test_login_correct_password(client, mock_user):
     response_login = client.get("/auth/login", json = {
-        "email":"test1@example.com",
-        "password":"hellothere!"
+        "email": mock_user["email"],
+        "password": mock_user["password"]
     })
 
-    assert response_reg.status_code == 201
     assert response_login.status_code == 200

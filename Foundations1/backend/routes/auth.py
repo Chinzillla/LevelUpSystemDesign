@@ -89,7 +89,7 @@ def login_user():
         )
         user = cursor.fetchone()
         if user is None:
-            return jsonify({"error": "Invalid email or password"}), 401
+            return jsonify({"error": "User does not exist"}), 401
 
         stored_password_hash = user["password"]
         if hash_password(password) != stored_password_hash:
