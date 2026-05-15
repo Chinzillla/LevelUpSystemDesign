@@ -15,18 +15,6 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/register', methods=['POST'])
 def register_user():
-    """
-    Routing logic for registering a new user.
-
-    Expects JSON with:
-        email: user's email address
-        password: user's plain-text password
-
-    Returns:
-        201 when the user is created.
-        400 when request data is invalid.
-        409 when the email already exists.
-    """
     data = request.get_json() or {}
 
     if not isinstance(data, dict):
@@ -70,6 +58,55 @@ def register_user():
         "email": email
     }), 201
 
+@auth_bp.route("/login", methods=['GET'])
+def login_user():
+    data = request.get_json() or {}
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Request body must be a JSON object"}), 400
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if not is_valid_email(email):
+        return jsonify({"error": "Valid email format is required"}), 400
+
+    email = email.strip()
+
+    password_error = validate_password(password)
+    if password_error:
+        return jsonify({"error": password_error}), 400
+    
+    hashed_password = hash_password(password)
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT password FROM users WHERE email = ?",
+            (email,)
+        )
+        user = cursor.fetchone()
+        if user is None:
+            return jsonify({"error": "Invalid email or password"}), 401
+
+        stored_password_hash = user["password"]
+        if hash_password(password) != stored_password_hash:
+            return jsonify({"error": "Invalid email or password"}), 401
+        
+        return jsonify({
+            "message": "Login successful",
+            "email": email
+        }), 200
+
+    except sqlite3.IntegrityError:
+        return jsonify({
+            "error": "Email already exists"
+        }), 409
+
+    finally:
+        connection.close()
 
 #Helpers
 def is_valid_email(email):
