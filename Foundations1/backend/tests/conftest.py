@@ -7,6 +7,7 @@ import pytest
 def client(tmp_path, monkeypatch):
     test_database = tmp_path / "test.db"
     monkeypatch.setenv("DATABASE_NAME", str(test_database))
+    monkeypatch.setenv("SALT", "4az")
 
     for module_name in ["app", "db", "routes.auth", "routes.health"]:
         sys.modules.pop(module_name, None)
