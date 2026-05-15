@@ -9,6 +9,11 @@ def register_user():
     email = data.get("email")
     password = data.get("password")
 
+    if not email or not password:
+        return jsonify({
+            "error": "Email and password are required"
+        }), 400
+
     return jsonify({
         "message": "You are registered!",
         "email": email
