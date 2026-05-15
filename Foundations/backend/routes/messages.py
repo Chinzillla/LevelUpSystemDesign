@@ -29,3 +29,13 @@ def create_message():
     connection.close()
 
     return jsonify({'message': 'Message created successfully'}), 201
+
+@messages_bp.route('/<int:message_id>', methods=['DELETE'])
+def delete_message(message_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM messages WHERE id = ?", (message_id,))
+    connection.commit()
+    connection.close()
+
+    return jsonify({'message': 'Message deleted'}), 200
