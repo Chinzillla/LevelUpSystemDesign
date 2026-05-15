@@ -26,16 +26,25 @@ def create_message():
     cursor = connection.cursor()
     cursor.execute("INSERT INTO messages (name, message) VALUES (?, ?)", (name, message))
     connection.commit()
+    message_id = cursor.lastrowid
     connection.close()
 
-    return jsonify({'message': 'Message created successfully'}), 201
+    return jsonify({
+        'id': message_id,
+        'name': name,
+        'message': message
+    }), 201
 
-@messages_bp.route('/<int:message_id>', methods=['DELETE'])
+@messages_bp.route('/<int:message_id>/', methods=['DELETE'])
 def delete_message(message_id):
     connection = get_connection()
     cursor = connection.cursor()
     cursor.execute("DELETE FROM messages WHERE id = ?", (message_id,))
     connection.commit()
+    deleted_count = cursor.rowcount
     connection.close()
+
+    if deleted_count == 0:
+        return jsonify({'error': 'Message not found'}), 404
 
     return jsonify({'message': 'Message deleted'}), 200
