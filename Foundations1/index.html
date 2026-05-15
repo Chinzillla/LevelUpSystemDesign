@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Foundations Level 1</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <main class="app">
+        <section class="panel auth-panel" id="auth-view">
+            <div class="panel-header">
+                <p class="eyebrow">Foundations Level 1</p>
+                <h1>CRUD with authentication</h1>
+                <p class="muted">Create an account, sign in, and manage your own records.</p>
+            </div>
+
+            <div class="auth-grid">
+                <form class="card form" id="register-form">
+                    <h2>Create account</h2>
+
+                    <label for="register-name">Name</label>
+                    <input id="register-name" name="name" type="text" autocomplete="name" required />
+
+                    <label for="register-email">Email</label>
+                    <input id="register-email" name="email" type="email" autocomplete="email" required />
+
+                    <label for="register-password">Password</label>
+                    <input id="register-password" name="password" type="password" autocomplete="new-password"
+                        required />
+
+                    <button type="submit">Register</button>
+                </form>
+
+                <form class="card form" id="login-form">
+                    <h2>Sign in</h2>
+
+                    <label for="login-email">Email</label>
+                    <input id="login-email" name="email" type="email" autocomplete="email" required />
+
+                    <label for="login-password">Password</label>
+                    <input id="login-password" name="password" type="password" autocomplete="current-password"
+                        required />
+
+                    <button type="submit">Log in</button>
+                </form>
+            </div>
+
+            <p class="status" id="auth-status" aria-live="polite"></p>
+        </section>
+
+        <section class="panel hidden" id="app-view">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Signed in</p>
+                    <h1>Your items</h1>
+                </div>
+
+                <button class="secondary-button" id="logout-button" type="button">Log out</button>
+            </header>
+
+            <form class="card item-form" id="item-form">
+                <div>
+                    <label for="item-title">Title</label>
+                    <input id="item-title" name="title" type="text" required />
+                </div>
+
+                <div>
+                    <label for="item-description">Description</label>
+                    <textarea id="item-description" name="description" rows="3"></textarea>
+                </div>
+
+                <button type="submit">Add item</button>
+            </form>
+
+            <section class="items-section">
+                <div class="section-header">
+                    <h2>Records</h2>
+                    <p class="muted">Only records owned by the signed-in user should appear here.</p>
+                </div>
+
+                <ul class="item-list" id="item-list">
+                    <li class="empty-state">No items yet.</li>
+                </ul>
+            </section>
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
