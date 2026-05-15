@@ -11,10 +11,16 @@ def register_user():
     email = data.get("email")
     password = data.get("password")
 
-    if not email or not password:
-        return jsonify({
-            "error": "Email and password are required"
-        }), 400
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+    
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
+    
+    email.strip()
+
+    if "@" not in email:
+        return jsonify({"error": "Valid email format is required"}), 400
     
     connection = get_connection()
     cursor = connection.cursor()
