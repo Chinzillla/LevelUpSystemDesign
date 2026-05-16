@@ -7,6 +7,7 @@ from db import init_db
 # API Routes
 from routes.health import health_bp
 from routes.auth import auth_bp
+from routes.item import item_bp
 
 # Helpers
 from helper.app import register_routes
@@ -16,7 +17,7 @@ CORS(app, origins=["http://"])
 
 init_db()
 
-register_routes(app, health_bp, auth_bp)
+register_routes(app, health_bp, auth_bp, item_bp)
 
 if __name__ == '__main__':
     app.run()

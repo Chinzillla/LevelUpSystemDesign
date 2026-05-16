@@ -2,7 +2,7 @@ import sqlite3
 from flask import Blueprint, jsonify, request
 from db import get_connection
 import secrets
-from helper.auth import is_valid_email, validate_password, hash_password, get_bearer_token
+from helper.auth import is_valid_email, validate_password, hash_password, get_bearer_token, validate_auth_request
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -10,21 +10,14 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 def register_user():
     data = request.get_json() or {}
 
-    if not isinstance(data, dict):
-        return jsonify({"error": "Request body must be a JSON object"}), 400
+    auth_data, error = validate_auth_request(data)
 
-    email = data.get("email")
-    password = data.get("password")
+    if error:
+        message, status_code = error
+        return jsonify({"error": message}), status_code
 
-    if not is_valid_email(email):
-        return jsonify({"error": "Valid email format is required"}), 400
-
-    email = email.strip()
-
-    password_error = validate_password(password)
-    if password_error:
-        return jsonify({"error": password_error}), 400
-    
+    email = auth_data["email"]
+    password = auth_data["password"]
     hashed_password = hash_password(password)
 
     connection = get_connection()
@@ -35,9 +28,8 @@ def register_user():
             "INSERT INTO users (email, password) VALUES (?, ?)",
             (email, hashed_password)
         )
-
-        user_id = cursor.lastrowid
         connection.commit()
+        user_id = cursor.lastrowid
 
     except sqlite3.IntegrityError:
         return jsonify({
@@ -57,20 +49,14 @@ def register_user():
 def login_user():
     data = request.get_json() or {}
 
-    if not isinstance(data, dict):
-        return jsonify({"error": "Request body must be a JSON object"}), 400
+    auth_data, error = validate_auth_request(data)
 
-    email = data.get("email")
-    password = data.get("password")
+    if error:
+        message, status_code = error
+        return jsonify({"error": message}), status_code
 
-    if not is_valid_email(email):
-        return jsonify({"error": "Valid email format is required"}), 400
-
-    email = email.strip()
-
-    password_error = validate_password(password)
-    if password_error:
-        return jsonify({"error": password_error}), 400
+    email = auth_data["email"]
+    password = auth_data["password"]
 
     connection = get_connection()
     cursor = connection.cursor()

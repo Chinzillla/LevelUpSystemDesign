@@ -9,7 +9,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DATABASE_NAME", str(test_database))
     monkeypatch.setenv("SALT", "4az")
 
-    for module_name in ["app", "db", "routes.auth", "routes.health"]:
+    for module_name in ["app", "db", "routes.auth", "routes.health", "routes.item"]:
         sys.modules.pop(module_name, None)
 
     app_module = importlib.import_module("app")
@@ -36,7 +36,7 @@ def mock_user(client):
     }
 
 @pytest.fixture()
-def get_auth_headers(client, mock_user):
+def auth_headers(client, mock_user):
     login_response = client.post("/auth/login", json={
         "email": mock_user["email"],
         "password": mock_user["password"]

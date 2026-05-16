@@ -60,6 +60,27 @@ def validate_password(password):
         return "Password contains invalid characters"
 
     return None
+    
+def validate_auth_request(data):
+    if not isinstance(data, dict):
+        return None, ("Request body must be a JSON object", 400)
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if not is_valid_email(email):
+        return None, ("Valid email format is required", 400)
+
+    email = email.strip()
+
+    password_error = validate_password(password)
+    if password_error:
+        return None, (password_error, 400)
+
+    return {
+        "email": email,
+        "password": password
+    }, None
 
 def hash_password(password):
     salted_password = password + SALT
