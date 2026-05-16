@@ -10,7 +10,7 @@ if not SALT:
 
 def is_valid_email(email):
     """
-    Basic validatation for registration email.
+    Basic validation for registration email.
 
     Returns:
         Boolean
@@ -39,7 +39,7 @@ def is_valid_email(email):
 
 def validate_password(password):
     """
-    Basic validatation for registration password.
+    Basic validation for registration password.
 
     Returns:
         str | None: An error message when invalid, otherwise None.

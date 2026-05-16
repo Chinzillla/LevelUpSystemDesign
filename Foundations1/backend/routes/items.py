@@ -14,12 +14,6 @@ def create_item():
     if session_token is None:
         return jsonify({"error": "Authentication required"}), 401
 
-    item_data, error = validate_item(data)
-
-    if error:
-        message, status_code = error
-        return jsonify({"error": message}), status_code
-
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -33,6 +27,12 @@ def create_item():
 
         if session is None:
             return jsonify({"error": "Invalid session"}), 401
+
+        item_data, error = validate_item(data)
+
+        if error:
+            message, status_code = error
+            return jsonify({"error": message}), status_code
 
         user_id = session["user_id"]
 
