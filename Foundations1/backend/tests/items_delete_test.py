@@ -1,9 +1,9 @@
-def test_delete_item_successfully(client, auth_headers, create_item):
+def test_delete_item_successfully(client, create_item):
     item = create_item("book")
 
     response = client.delete("/items/delete",
         json={"name": item["name"]},
-        headers=auth_headers
+        headers=item["bearer_token"]
     )
 
     data = response.get_json()

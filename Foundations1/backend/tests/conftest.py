@@ -61,6 +61,11 @@ def create_item(client, auth_headers):
             headers=auth_headers
         )
 
-        return response.get_json()
+        data = response.get_json()
+
+        return {
+            "name": data["name"],
+            "bearer_token": auth_headers
+        }
 
     return _create_item
