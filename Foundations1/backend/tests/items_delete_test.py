@@ -1,5 +1,5 @@
 def test_delete_item_successfully(client, create_item):
-    item = create_item("book")
+    item = create_item(["book"])[0]
 
     response = client.delete("/items/delete",
         json={"name": item["name"]},

@@ -55,17 +55,18 @@ def auth_headers(client, mock_user):
 
 @pytest.fixture()
 def create_item(client, auth_headers):
-    def _create_item(name="name"):
-        response = client.post("/items/create",
-            json={"name": name},
-            headers=auth_headers
-        )
+    def _create_item(names):
+        items = []
+        for name in names:
+            response = client.post("/items/create",
+                json={"name": name},
+                headers=auth_headers
+            )
 
-        data = response.get_json()
-
-        return {
-            "name": data["name"],
-            "bearer_token": auth_headers
-        }
-
+            data = response.get_json()
+            items.append({
+                "name": data["name"],
+                "bearer_token": auth_headers
+            })
+        return items
     return _create_item
