@@ -65,7 +65,7 @@ def delete_item():
     data = request.get_json() or {}
     session_token = get_bearer_token(request.headers.get("Authorization"))
 
-    if session_token == None:
+    if session_token is None:
         return jsonify({"error": "Authentication required"}), 401
     
     item_data, error = validate_item(data)
@@ -73,9 +73,37 @@ def delete_item():
     if error:
         message, status_code = error
         return jsonify({"error": message}), status_code
+
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT user_id FROM sessions WHERE session_token = ?",
+            (session_token,)
+        )
+
+        session = cursor.fetchone()
+
+        if session is None:
+            return jsonify({"error": "Invalid session"}), 401
+        
+        user_id = session["user_id"]
+
+        cursor.execute(
+            "DELETE FROM items WHERE user_id = ? AND name = ?",
+            (user_id, item_data["name"],)
+        )
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Item not found"}), 404
+
+        connection.commit()
     
-    return jsonify({
-        "message": "Item deleted",
-        "id": "123",
-        "name": "pencil"
-    })
+        return jsonify({
+            "message": "Item deleted",
+            "name": item_data["name"]
+        }), 200
+    finally:
+        connection.close()
+    
