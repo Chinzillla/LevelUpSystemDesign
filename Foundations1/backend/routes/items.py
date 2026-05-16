@@ -2,11 +2,11 @@ from flask import Blueprint, jsonify, request
 import sqlite3
 from db import get_connection
 from helper.auth import get_bearer_token
-from helper.item import validate_item
+from helper.items import validate_item
 
-item_bp = Blueprint('items', __name__, url_prefix='/items')
+items_bp = Blueprint('items', __name__, url_prefix='/items')
 
-@item_bp.route('/create', methods=['POST'])
+@items_bp.route('/create', methods=['POST'])
 def create_item():
     data = request.get_json() or {}
     session_token = get_bearer_token(request.headers.get("Authorization"))
@@ -56,8 +56,8 @@ def create_item():
     finally:
         connection.close()
 
-# @item_bp.route('/list', methods=[''])
+# @items_bp.route('/list', methods=[''])
 
-# @item_bp.route('/update', methods=[''])
+# @items_bp.route('/update', methods=[''])
 
-# @item_bp.route('/delete', methods=[''])
+# @items_bp.route('/delete', methods=[''])

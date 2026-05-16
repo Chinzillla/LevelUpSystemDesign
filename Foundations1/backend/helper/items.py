@@ -9,5 +9,8 @@ def validate_item(data):
 
     if not isinstance(item_name, str):
         return None, ("Valid item name format is required", 400)
+
+    if not item_name.strip():
+        return None, ("Item name is required", 400)
     
-    return {"name": item_name}, None
+    return {"name": item_name.strip()}, None
