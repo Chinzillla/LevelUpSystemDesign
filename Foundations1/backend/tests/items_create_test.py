@@ -43,7 +43,7 @@ def test_create_item_requires_name(client, auth_headers):
 
     assert response.status_code == 400
     assert response.get_json() == {
-        "error": "Item name is required"
+        "error": "Valid item name format is required"
     }
 
 def test_create_item_requires_string(client, auth_headers):
