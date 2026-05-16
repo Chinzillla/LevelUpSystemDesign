@@ -34,3 +34,16 @@ def mock_user(client):
         "email": email,
         "password": password
     }
+
+@pytest.fixture()
+def get_auth_headers(client, mock_user):
+    login_response = client.post("/auth/login", json={
+        "email": mock_user["email"],
+        "password": mock_user["password"]
+    })
+
+    token = login_response.get_json()["session_token"]
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
