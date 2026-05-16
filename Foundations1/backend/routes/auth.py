@@ -1,17 +1,8 @@
 import sqlite3
 from flask import Blueprint, jsonify, request
 from db import get_connection
-import hashlib
-import os
-from dotenv import load_dotenv
 import secrets
-
-
-load_dotenv()
-SALT = os.environ.get("SALT")
-
-if not SALT:
-    raise RuntimeError("SALT environment variable must be set")
+from helper.auth import is_valid_email, validate_password, hash_password, get_bearer_token
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -86,7 +77,7 @@ def login_user():
 
     try:
         cursor.execute(
-            "SELECT password FROM users WHERE email = ?",
+            "SELECT id, password FROM users WHERE email = ?",
             (email,)
         )
         user = cursor.fetchone()
@@ -97,18 +88,14 @@ def login_user():
         if hash_password(password) != stored_password_hash:
             return jsonify({"error": "Invalid email or password"}), 401
         
-        cursor.execute(
-            "SELECT id, password FROM users WHERE email = ?",
-            (email,)
-        )
-        user = cursor.fetchone()
-        
         session_token = secrets.token_urlsafe(32)
         
         cursor.execute(
             "INSERT INTO sessions (session_token, user_id, created_at) VALUES (?, ?, datetime('now'))" ,
             (session_token, user["id"])
         )
+
+        connection.commit()
 
         return jsonify({
             "message": "Login successful",
@@ -124,61 +111,65 @@ def login_user():
     finally:
         connection.close()
 
-#Helpers
-def is_valid_email(email):
-    """
-    Basic validatation for registration email.
+@auth_bp.route("/me", methods=['GET'])
+def get_current_user():
+    session_token = get_bearer_token(request.headers.get("Authorization"))
 
-    Returns:
-        Boolean
-    """
-    if not isinstance(email, str):
-        return False
+    if session_token is None:
+        return jsonify({"error": "Authentication required"}), 401
 
-    if not email:
-        return False
+    connection = get_connection()
+    cursor = connection.cursor()
 
-    email = email.strip()
-    email_parts = email.split("@")
+    try:
+        cursor.execute(
+            """
+            SELECT users.id, users.email
+            FROM sessions
+            JOIN users ON users.id = sessions.user_id
+            WHERE sessions.session_token = ?
+            """,
+            (session_token,)
+        )
 
-    if len(email_parts) != 2:
-        return False
+        user = cursor.fetchone()
 
-    local_part, domain_part = email_parts
+        if user is None:
+            return jsonify({"error": "Invalid session"}), 401
 
-    if not local_part or not domain_part:
-        return False
+        return jsonify({
+            "id": user["id"],
+            "email": user["email"]
+        }), 200
 
-    if "." not in domain_part:
-        return False
+    finally:
+        connection.close()
 
-    return True
+@auth_bp.route("/logout", methods=['POST'])
+def logout_user():
+    session_token = get_bearer_token(request.headers.get("Authorization"))
 
-def validate_password(password):
-    """
-    Basic validatation for registration password.
+    if session_token is None:
+        return jsonify({"error": "Authentication required"}), 401
 
-    Returns:
-        str | None: An error message when invalid, otherwise None.
-    """
-    if not isinstance(password, str):
-        return "Valid Password is required"
+    connection = get_connection()
+    cursor = connection.cursor()
 
-    if not password:
-        return "Valid Password is required"
+    try:
+        cursor.execute(
+            """
+            DELETE FROM sessions
+            WHERE session_token = ?
+            """,
+            (session_token,)
+        )
 
-    if len(password) < 8:
-        return "Password must be at least 8 characters"
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Invalid session"}), 401
 
-    if len(password) > 128:
-        return "Password must be 128 characters or fewer"
-
-    if any(ord(char) < 32 or ord(char) > 126 for char in password):
-        return "Password contains invalid characters"
-
-    return None
-
-def hash_password(password):
-    salted_password = password + SALT
-    hashed = hashlib.sha256(salted_password.encode())
-    return hashed.hexdigest()
+        connection.commit()
+        
+        return jsonify({"message": "Logout successful"}), 200
+    
+    finally:
+        connection.close()

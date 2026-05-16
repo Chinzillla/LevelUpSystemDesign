@@ -17,3 +17,20 @@ def client(tmp_path, monkeypatch):
 
     with app_module.app.test_client() as test_client:
         yield test_client
+
+@pytest.fixture()
+def mock_user(client):
+    email = "test@example.com"
+    password = "hellothere!"
+
+    response = client.post("/auth/register", json ={
+        "email": email,
+        "password": password
+    })
+
+    assert response.status_code == 201
+
+    return {
+        "email": email,
+        "password": password
+    }

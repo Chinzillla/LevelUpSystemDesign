@@ -9,7 +9,7 @@ from routes.health import health_bp
 from routes.auth import auth_bp
 
 # Helpers
-from helper.bp_register import register_routes
+from helper.app import register_routes
 
 app = Flask(__name__)
 CORS(app, origins=["http://"])
