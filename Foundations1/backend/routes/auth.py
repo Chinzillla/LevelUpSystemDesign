@@ -41,7 +41,7 @@ def register_user():
 
     except sqlite3.IntegrityError:
         return jsonify({
-            "error": "Email already exists"
+            "error": "Could not create session"
         }), 409
     
     finally:
