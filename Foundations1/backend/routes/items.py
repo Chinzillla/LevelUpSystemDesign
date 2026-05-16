@@ -60,4 +60,22 @@ def create_item():
 
 # @items_bp.route('/update', methods=[''])
 
-# @items_bp.route('/delete', methods=[''])
+@items_bp.route('/delete', methods=['DELETE'])
+def delete_item():
+    data = request.get_json() or {}
+    session_token = get_bearer_token(request.headers.get("Authorization"))
+
+    if session_token == None:
+        return jsonify({"error": "Authentication required"}), 401
+    
+    item_data, error = validate_item(data)
+
+    if error:
+        message, status_code = error
+        return jsonify({"error": message}), status_code
+    
+    return jsonify({
+        "message": "Item deleted",
+        "id": "123",
+        "name": "pencil"
+    })
