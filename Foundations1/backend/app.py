@@ -7,16 +7,17 @@ from db import init_db
 # API Routes
 from routes.health import health_bp
 from routes.auth import auth_bp
+from routes.items import items_bp
 
 # Helpers
-from helper.bp_register import register_routes
+from helper.app import register_routes
 
 app = Flask(__name__)
 CORS(app, origins=["http://"])
 
 init_db()
 
-register_routes(app, health_bp, auth_bp)
+register_routes(app, health_bp, auth_bp, items_bp)
 
 if __name__ == '__main__':
     app.run()

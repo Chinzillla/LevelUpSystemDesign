@@ -48,6 +48,9 @@ def test_register_existing_user(client):
 
     assert first_response.status_code == 201
     assert second_response.status_code == 409
+    assert second_response.get_json() == {
+        "error": "Email already exists"
+    }
 
 def test_register_incorrect_email(client):
     response = client.post("/auth/register", json={

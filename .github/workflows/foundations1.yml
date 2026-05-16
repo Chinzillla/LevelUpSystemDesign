@@ -47,7 +47,9 @@ jobs:
           python -m py_compile routes/auth.py
           python -m py_compile routes/health.py
           python -m py_compile routes/items.py
-          python -m py_compile helper/bp_register.py
+          python -m py_compile helper/app.py
+          python -m py_compile helper/auth.py
+          python -m py_compile helper/items.py
 
       - name: Check frontend JavaScript syntax
         run: node --check ../app.js
