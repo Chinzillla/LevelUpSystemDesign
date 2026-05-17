@@ -109,7 +109,71 @@ def list_items():
     finally:
         connection.close()
 
-# @items_bp.route('/update', methods=[''])
+@items_bp.route('/update', methods=['PUT'])
+def update_item():
+    data = request.get_json() or {}
+    session_token = get_bearer_token(request.headers.get("Authorization"))
+
+    if session_token is None:
+        return jsonify({"error": "Authentication required"}), 401
+
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "SELECT user_id FROM sessions WHERE session_token = ?",
+            (session_token,)
+        )
+        session = cursor.fetchone()
+        if session is None:
+            return jsonify({"error": "Invalid session"}), 401
+
+        user_id = session["user_id"]
+
+        name = data.get("name")
+        new_name = data.get("new_name")
+        completed = data.get("completed")
+
+        if not name:
+            return jsonify({"error": "Item name is required"}), 400
+
+        updates = []
+        params = []
+        if new_name is not None:
+            updates.append("name = ?")
+            params.append(new_name.strip())
+        if completed is not None:
+            updates.append("completed = ?")
+            params.append(1 if completed else 2)
+
+        if not updates:
+            return jsonify({"error": "No update fields provided"}), 400
+
+        params.extend([user_id, name])
+
+        cursor.execute(
+            f"UPDATE items SET {', '.join(updates)} WHERE user_id = ? AND name = ?",
+            tuple(params)
+        )
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Item not found"}), 404
+
+        connection.commit()
+
+        cursor.execute(
+            "SELECT name, completed FROM items WHERE user_id = ? AND name = ?",
+            (user_id, new_name if new_name else name)
+        )
+        updated = cursor.fetchone()
+        return jsonify({
+            "message": "Item updated",
+            "name": updated["name"],
+            "completed": bool(updated["completed"])
+        }), 200
+
+    finally:
+        connection.close()
 
 @items_bp.route('/delete', methods=['DELETE'])
 def delete_item():
