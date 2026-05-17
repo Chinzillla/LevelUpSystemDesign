@@ -144,7 +144,7 @@ def update_item():
             params.append(new_name.strip())
         if completed is not None:
             updates.append("completed = ?")
-            params.append(1 if completed else 2)
+            params.append(1 if completed else 0)
 
         if not updates:
             return jsonify({"error": "No update fields provided"}), 400
