@@ -17,6 +17,9 @@ const {
     updateItem,
     deleteItem,
     buildCreateItemPayload,
+    buildUpdateItemPayload,
+    replaceItemByName,
+    removeItemByName,
     renderItemHtml,
     renderItemsHtml,
 } = require("./app.js");
@@ -181,7 +184,8 @@ test("renderItemHtml renders item name and status", () => {
     const html = renderItemHtml({ name: "book", completed: false });
 
     assert.match(html, /book/);
-    assert.match(html, /Active/);
+    assert.match(html, /data-item-update-form/);
+    assert.match(html, /data-delete-item-name="book"/);
     assert.match(html, /data-item-name="book"/);
 });
 
@@ -189,10 +193,41 @@ test("renderItemHtml escapes user-controlled item names", () => {
     const html = renderItemHtml({ name: "<script>", completed: true });
 
     assert.match(html, /&lt;script&gt;/);
-    assert.match(html, /Completed/);
+    assert.match(html, /checked/);
     assert.doesNotMatch(html, /<script>/);
 });
 
 test("renderItemsHtml renders an empty state", () => {
     assert.equal(renderItemsHtml([]), '<li class="empty-state">No items yet.</li>');
+});
+
+test("buildUpdateItemPayload trims new name and preserves current name", () => {
+    assert.deepEqual(buildUpdateItemPayload("book", "  notebook  ", true), {
+        name: "book",
+        new_name: "notebook",
+        completed: true,
+    });
+});
+
+test("replaceItemByName replaces only the matching item", () => {
+    const items = [
+        { name: "book", completed: false },
+        { name: "pen", completed: false },
+    ];
+
+    assert.deepEqual(replaceItemByName(items, "book", { name: "notebook", completed: true }), [
+        { name: "notebook", completed: true },
+        { name: "pen", completed: false },
+    ]);
+});
+
+test("removeItemByName removes only the matching item", () => {
+    const items = [
+        { name: "book", completed: false },
+        { name: "pen", completed: false },
+    ];
+
+    assert.deepEqual(removeItemByName(items, "book"), [
+        { name: "pen", completed: false },
+    ]);
 });

@@ -105,6 +105,31 @@ function buildCreateItemPayload(form) {
     };
 }
 
+function buildUpdateItemPayload(currentName, newName, completed) {
+    return {
+        name: currentName,
+        new_name: newName.trim(),
+        completed: Boolean(completed),
+    };
+}
+
+function replaceItemByName(items, currentName, updatedItem) {
+    return items.map((item) => {
+        if (item.name !== currentName) {
+            return item;
+        }
+
+        return {
+            ...item,
+            ...updatedItem,
+        };
+    });
+}
+
+function removeItemByName(items, name) {
+    return items.filter((item) => item.name !== name);
+}
+
 function escapeHtml(value) {
     return String(value)
         .replaceAll("&", "&amp;")
@@ -115,14 +140,22 @@ function escapeHtml(value) {
 }
 
 function renderItemHtml(item) {
-    const status = item.completed ? "Completed" : "Active";
+    const safeName = escapeHtml(item.name);
+    const checked = item.completed ? " checked" : "";
 
     return `
         <li class="item-row" data-item-name="${escapeHtml(item.name)}">
-            <div>
-                <span class="item-name">${escapeHtml(item.name)}</span>
-                <span class="item-meta">${status}</span>
-            </div>
+            <form class="item-edit-form" data-item-update-form data-item-name="${safeName}">
+                <label class="item-checkbox">
+                    <input name="completed" type="checkbox"${checked} />
+                    <span>Done</span>
+                </label>
+
+                <input class="item-edit-input" name="new_name" type="text" value="${safeName}" aria-label="Item name" required />
+
+                <button type="submit">Save</button>
+                <button class="secondary-button" type="button" data-delete-item-name="${safeName}">Delete</button>
+            </form>
         </li>
     `;
 }
@@ -240,6 +273,50 @@ function initializeApp(documentRoot = document, storage = localStorage) {
         }
     });
 
+    elements.itemList.addEventListener("submit", async (event) => {
+        const form = event.target.closest("[data-item-update-form]");
+
+        if (!form) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const sessionToken = loadSessionToken(storage);
+        const payload = buildUpdateItemPayload(
+            form.dataset.itemName,
+            form.elements.new_name.value,
+            form.elements.completed.checked
+        );
+
+        try {
+            const item = await updateItem(payload, sessionToken);
+            setItemStatus(elements, `${item.name} updated.`);
+            await loadAndRenderItems(elements, sessionToken);
+        } catch (error) {
+            setItemStatus(elements, error.message);
+        }
+    });
+
+    elements.itemList.addEventListener("click", async (event) => {
+        const deleteButton = event.target.closest("[data-delete-item-name]");
+
+        if (!deleteButton) {
+            return;
+        }
+
+        const sessionToken = loadSessionToken(storage);
+        const itemName = deleteButton.dataset.deleteItemName;
+
+        try {
+            await deleteItem(itemName, sessionToken);
+            setItemStatus(elements, `${itemName} deleted.`);
+            await loadAndRenderItems(elements, sessionToken);
+        } catch (error) {
+            setItemStatus(elements, error.message);
+        }
+    });
+
     const currentToken = loadSessionToken(storage);
 
     if (currentToken) {
@@ -277,6 +354,9 @@ if (typeof module !== "undefined") {
         deleteItem,
         getFormPayload,
         buildCreateItemPayload,
+        buildUpdateItemPayload,
+        replaceItemByName,
+        removeItemByName,
         escapeHtml,
         renderItemHtml,
         renderItemsHtml,
