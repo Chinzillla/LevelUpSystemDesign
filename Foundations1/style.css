@@ -153,7 +153,7 @@ h2 {
 }
 
 .item-form {
-    grid-template-columns: 1fr 2fr auto;
+    grid-template-columns: 1fr auto;
     align-items: end;
 }
 
@@ -188,6 +188,28 @@ h2 {
     background: #ffffff;
 }
 
+.item-edit-form {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.item-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+}
+
+.item-checkbox input {
+    width: auto;
+}
+
+.item-edit-input {
+    min-width: 0;
+}
+
 .empty-state {
     color: #64748b;
     text-align: center;
@@ -203,6 +225,7 @@ h2 {
     }
 
     .auth-grid,
+    .item-edit-form,
     .item-form {
         grid-template-columns: 1fr;
     }

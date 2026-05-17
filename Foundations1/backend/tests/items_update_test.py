@@ -14,7 +14,7 @@ def test_update_item_successfully(client, create_item):
     assert data["completed"] is True
 
 def test_update_item_not_found(client, create_item):
-    item = create_item("book")
+    item = create_item(["book"])
     auth_header = item[0]["bearer_token"]
 
     response = client.put("/items/update",
@@ -40,7 +40,7 @@ def test_update_item_invalid_token(client):
     assert response.get_json() == {"error": "Invalid session"}
 
 def test_update_item_invalid_data(client, create_item):
-    item = create_item("book")
+    item = create_item(["book"])
     auth_header = item[0]["bearer_token"]
 
     response = client.put("/items/update",
@@ -49,3 +49,22 @@ def test_update_item_invalid_data(client, create_item):
     )
     assert response.status_code == 400
     assert "error" in response.get_json()
+
+def test_update_item_completed_false(client, create_item):
+    item = create_item(["book"])
+    auth_header = item[0]["bearer_token"]
+
+    client.put("/items/update",
+        json={"name": "book", "completed": True},
+        headers=auth_header
+    )
+
+    response = client.put("/items/update",
+        json={"name": "book", "completed": False},
+        headers=auth_header
+    )
+
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["completed"] is False

@@ -13,7 +13,10 @@ from routes.items import items_bp
 from helper.app import register_routes
 
 app = Flask(__name__)
-CORS(app, origins=["http://"])
+CORS(app, origins=[
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+])
 
 init_db()
 

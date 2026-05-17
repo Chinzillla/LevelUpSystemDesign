@@ -60,17 +60,14 @@
 
             <form class="card item-form" id="item-form">
                 <div>
-                    <label for="item-title">Title</label>
-                    <input id="item-title" name="title" type="text" required />
-                </div>
-
-                <div>
-                    <label for="item-description">Description</label>
-                    <textarea id="item-description" name="description" rows="3"></textarea>
+                    <label for="item-name">Name</label>
+                    <input id="item-name" name="name" type="text" required />
                 </div>
 
                 <button type="submit">Add item</button>
             </form>
+
+            <p class="status" id="item-status" aria-live="polite"></p>
 
             <section class="items-section">
                 <div class="section-header">
@@ -85,7 +82,7 @@
         </section>
     </main>
 
-    <script src="main.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>
