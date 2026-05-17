@@ -3,6 +3,11 @@ const assert = require("node:assert/strict");
 
 const {
     API_BASE_URL,
+    SESSION_TOKEN_KEY,
+    buildAuthHeader,
+    saveSessionToken,
+    loadSessionToken,
+    clearSessionToken,
     requestJson,
     registerUser,
     loginUser,
@@ -18,6 +23,22 @@ function mockResponse(data, ok = true, status = 200) {
         ok,
         status,
         json: async () => data,
+    };
+}
+
+function createMemoryStorage() {
+    const values = new Map();
+
+    return {
+        getItem(key) {
+            return values.has(key) ? values.get(key) : null;
+        },
+        setItem(key, value) {
+            values.set(key, value);
+        },
+        removeItem(key) {
+            values.delete(key);
+        },
     };
 }
 
@@ -38,6 +59,25 @@ test("requestJson throws backend error messages", async () => {
         () => requestJson("/items/list", { method: "GET" }),
         /Invalid session/
     );
+});
+
+test("session helpers save, load, and clear the token", () => {
+    const storage = createMemoryStorage();
+
+    saveSessionToken("token-123", storage);
+
+    assert.equal(storage.getItem(SESSION_TOKEN_KEY), "token-123");
+    assert.equal(loadSessionToken(storage), "token-123");
+
+    clearSessionToken(storage);
+
+    assert.equal(loadSessionToken(storage), null);
+});
+
+test("buildAuthHeader creates a bearer auth header", () => {
+    assert.deepEqual(buildAuthHeader("token-123"), {
+        "Authorization": "Bearer token-123",
+    });
 });
 
 test("registerUser posts credentials", async () => {
