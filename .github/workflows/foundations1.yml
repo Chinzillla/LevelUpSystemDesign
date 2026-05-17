@@ -52,9 +52,14 @@ jobs:
           python -m py_compile helper/items.py
 
       - name: Check frontend JavaScript syntax
-        run: node --check ../app.js
+        run: |
+          node --check ../app.js
+          node --check ../app.test.js
 
       - name: Run backend tests
         env:
           PYTHONPATH: ${{ github.workspace }}/Foundations1/backend
         run: python -m pytest -q
+
+      - name: Run frontend tests
+        run: node --test ../app.test.js
