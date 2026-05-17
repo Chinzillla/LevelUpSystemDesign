@@ -16,6 +16,9 @@ const {
     createItem,
     updateItem,
     deleteItem,
+    buildCreateItemPayload,
+    renderItemHtml,
+    renderItemsHtml,
 } = require("./app.js");
 
 function mockResponse(data, ok = true, status = 200) {
@@ -165,4 +168,31 @@ test("deleteItem sends name payload", async () => {
     };
 
     assert.equal((await deleteItem("book", "token-123")).name, "book");
+});
+
+test("buildCreateItemPayload trims the item name", () => {
+    const form = new FormData();
+    form.set("name", "  book  ");
+
+    assert.deepEqual(buildCreateItemPayload(form), { name: "book" });
+});
+
+test("renderItemHtml renders item name and status", () => {
+    const html = renderItemHtml({ name: "book", completed: false });
+
+    assert.match(html, /book/);
+    assert.match(html, /Active/);
+    assert.match(html, /data-item-name="book"/);
+});
+
+test("renderItemHtml escapes user-controlled item names", () => {
+    const html = renderItemHtml({ name: "<script>", completed: true });
+
+    assert.match(html, /&lt;script&gt;/);
+    assert.match(html, /Completed/);
+    assert.doesNotMatch(html, /<script>/);
+});
+
+test("renderItemsHtml renders an empty state", () => {
+    assert.equal(renderItemsHtml([]), '<li class="empty-state">No items yet.</li>');
 });

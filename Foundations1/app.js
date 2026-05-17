@@ -92,9 +92,51 @@ function deleteItem(name, sessionToken) {
 }
 
 function getFormPayload(form) {
-    const formData = new FormData(form);
+    const formData = form instanceof FormData ? form : new FormData(form);
 
     return Object.fromEntries(formData.entries());
+}
+
+function buildCreateItemPayload(form) {
+    const data = getFormPayload(form);
+
+    return {
+        name: data.name.trim(),
+    };
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function renderItemHtml(item) {
+    const status = item.completed ? "Completed" : "Active";
+
+    return `
+        <li class="item-row" data-item-name="${escapeHtml(item.name)}">
+            <div>
+                <span class="item-name">${escapeHtml(item.name)}</span>
+                <span class="item-meta">${status}</span>
+            </div>
+        </li>
+    `;
+}
+
+function renderItemsHtml(items) {
+    if (items.length === 0) {
+        return '<li class="empty-state">No items yet.</li>';
+    }
+
+    return items.map(renderItemHtml).join("");
+}
+
+function renderItems(itemList, items) {
+    itemList.innerHTML = renderItemsHtml(items);
 }
 
 function getAppElements(documentRoot = document) {
@@ -105,6 +147,9 @@ function getAppElements(documentRoot = document) {
         loginForm: documentRoot.getElementById("login-form"),
         logoutButton: documentRoot.getElementById("logout-button"),
         authStatus: documentRoot.getElementById("auth-status"),
+        itemForm: documentRoot.getElementById("item-form"),
+        itemList: documentRoot.getElementById("item-list"),
+        itemStatus: documentRoot.getElementById("item-status"),
     };
 }
 
@@ -122,7 +167,14 @@ function setAuthStatus(elements, message) {
     elements.authStatus.textContent = message;
 }
 
-async function loadAndRenderItems() {}
+function setItemStatus(elements, message) {
+    elements.itemStatus.textContent = message;
+}
+
+async function loadAndRenderItems(elements, sessionToken) {
+    const data = await listItems(sessionToken);
+    renderItems(elements.itemList, data.items);
+}
 
 function initializeApp(documentRoot = document, storage = localStorage) {
     const elements = getAppElements(documentRoot);
@@ -173,8 +225,28 @@ function initializeApp(documentRoot = document, storage = localStorage) {
         }
     });
 
-    if (loadSessionToken(storage)) {
+    elements.itemForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const sessionToken = loadSessionToken(storage);
+
+        try {
+            const item = await createItem(buildCreateItemPayload(elements.itemForm), sessionToken);
+            elements.itemForm.reset();
+            setItemStatus(elements, `${item.name} created.`);
+            await loadAndRenderItems(elements, sessionToken);
+        } catch (error) {
+            setItemStatus(elements, error.message);
+        }
+    });
+
+    const currentToken = loadSessionToken(storage);
+
+    if (currentToken) {
         showAppView(elements);
+        loadAndRenderItems(elements, currentToken).catch((error) => {
+            setItemStatus(elements, error.message);
+        });
     } else {
         showAuthView(elements);
     }
@@ -204,6 +276,11 @@ if (typeof module !== "undefined") {
         updateItem,
         deleteItem,
         getFormPayload,
+        buildCreateItemPayload,
+        escapeHtml,
+        renderItemHtml,
+        renderItemsHtml,
+        renderItems,
         getAppElements,
         showAuthView,
         showAppView,

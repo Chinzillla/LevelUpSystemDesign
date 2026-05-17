@@ -153,7 +153,7 @@ h2 {
 }
 
 .item-form {
-    grid-template-columns: 1fr 2fr auto;
+    grid-template-columns: 1fr auto;
     align-items: end;
 }
 
@@ -186,6 +186,23 @@ h2 {
     border-radius: 8px;
     padding: 1rem;
     background: #ffffff;
+}
+
+.item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.item-name {
+    display: block;
+    font-weight: 800;
+}
+
+.item-meta {
+    color: #64748b;
+    font-size: 0.9rem;
 }
 
 .empty-state {
