@@ -46,17 +46,68 @@ def create_item():
         connection.commit()
         item_id = cursor.lastrowid
 
+        cursor.execute(
+            "SELECT created_at FROM items WHERE id = ?",
+            (item_id,)
+        )
+
+        created_at = cursor.fetchone()["created_at"]
+
         return jsonify({
             "message": "Item created",
             "id": item_id,
             "name": item_data["name"],
-            "completed": False
+            "completed": False,
+            "created_at": created_at
             }), 201
 
     finally:
         connection.close()
 
-# @items_bp.route('/list', methods=[''])
+@items_bp.route('/list', methods=['GET'])
+def list_items():
+    session_token = get_bearer_token(request.headers.get("Authorization"))
+
+    if session_token is None:
+        return jsonify({"error": "Authentication required"}), 401
+    
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT user_id FROM sessions WHERE session_token = ?",
+            (session_token,)
+        )
+
+        session = cursor.fetchone()
+        if session is None:
+            return jsonify({"error": "Invalid session"}), 401
+        
+        user_id = session["user_id"]
+
+        cursor.execute(
+            "SELECT id, name, completed, created_at FROM items WHERE user_id = ?",
+            (user_id,)
+        )
+
+        items = [
+            {
+                "id": row["id"],
+                "name": row["name"],
+                "completed": row["completed"],
+                "created_at": row["created_at"]
+            }
+            for row in cursor.fetchall()
+        ]
+
+        return jsonify({
+            "message": "Successfully retrieved items list",
+            "items": items
+        }), 200
+
+    finally:
+        connection.close()
 
 # @items_bp.route('/update', methods=[''])
 
